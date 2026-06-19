@@ -1,4 +1,8 @@
 import streamlit as st
+#import는 전부 가져오기
+#import crawling as cr
+#from은 일부만 가져오기
+from crawling import crawling_saramin,crawling_work24
 
 #레이아웃
 #헤더
@@ -25,7 +29,7 @@ with st.expander("상세 검색 조건"):
                                   placeholder="예 : 파이썬, 인공지능")
         
         st.success('컬럼 2')
-        search_text=st.text_input("제외할 검색어",
+        except_text=st.text_input("제외할 검색어",
                                     placeholder="예 : 야간 근무, 출장")
 
         max_pages = st.number_input('크롤링 페이지 수',
@@ -76,7 +80,7 @@ with st.expander("상세 검색 조건"):
                                                list(cat_options.keys()),
                                                default=['IT개발·데이터'])
             
-            category = [cat_options[x] for x in selected_location if cat_options[x]]
+            category = [cat_options[x] for x in selected_category if cat_options[x]]
 
             #경력
             career_option = {'전체':'0','신입':'1','경력':'2','신입/경력':'3',}
@@ -104,5 +108,42 @@ with st.expander("상세 검색 조건"):
              edu = st.selectbox("학력을 선택하세요",list(edu_options.keys()))
              edu = edu_options[edu]
 
+#st.button(버튼에 들어갈 글자,) '크기 조절 옵션'
+crwaling_clicked = st.button("크롤링 시작",
+                             use_container_width=True,
+                             type='primary')
 
+#crwaling_clicked -> true 버튼을 눌렀음 / False 버튼을 누르지 않음
+if crwaling_clicked:
+    st.write('버튼을 누름')
+else:
+    st.write('버튼을 안누름')
 
+#크롤링 시행!!
+#1.크롤링 한 결과를 어떻게 받아올 것인가?
+#df = 
+#2.크롤링 하는동안 어떻게 안내할 것인가?
+
+if crwaling_clicked :
+    #2-1 검색어나 필수요소가 누락된경우 안내
+    #검색어가 없다
+    if not search_text:
+        st.warning('검색어를 입력해주세요!')
+    #2-2 크롤링 시행하는 동안 기다려주세요 안내
+    else:
+        with st.spinner(f"{site_select}에서{search_text}검색 결과 가져오는 중..."):
+            if site_select == '사람인':
+                #사람인 크롤링 함수
+                df = crawling_saramin()
+
+            else:
+                #고용24 크롤링 함수
+                df = crawling_work24()
+
+#     st.session_state['df'] = df
+# #st.session_state가 뭘까?
+# #화면을 랜더링 할때에도 df의 정보를 기억하도록 만들어 줌 
+# #session_state는 '딕셔너리' 처럼 저장
+# #session_state['df']
+# df['expection] = df.expection
+df = st.session_state['df']
