@@ -1,8 +1,13 @@
+import pandas as pd
 import streamlit as st
 #import는 전부 가져오기
 #import crawling as cr
 #from은 일부만 가져오기
-from crawling import crawling_saramin,crawling_work24
+from crawling import crawling_saramin,crawling_work24,download_to_csv
+
+if 'df' not in st.session_state:
+    st.session_state['df'] = pd.DataFrame()
+df = st.session_state['df']
 
 #레이아웃
 #헤더
@@ -134,16 +139,45 @@ if crwaling_clicked :
         with st.spinner(f"{site_select}에서{search_text}검색 결과 가져오는 중..."):
             if site_select == '사람인':
                 #사람인 크롤링 함수
-                df = crawling_saramin()
+                df= crawling_saramin(search_text = search_text, 
+                                        except_text = except_text,
+                                        region = locations, 
+                                        category = category,
+                                        career = career,
+                                        education = edu,
+                                        max_pages = max_pages)
+
 
             else:
                 #고용24 크롤링 함수
-                df = crawling_work24()
-
-#     st.session_state['df'] = df
+                df = crawling_work24(search_text = search_text, 
+                                    except_text = except_text,
+                                    region = region, 
+                                    category = ocupation,
+                                    career = career,
+                                    education = edu,
+                                    max_pages = max_pages)
+                    
+    #st.session_state['df'] = df
 # #st.session_state가 뭘까?
 # #화면을 랜더링 할때에도 df의 정보를 기억하도록 만들어 줌 
 # #session_state는 '딕셔너리' 처럼 저장
 # #session_state['df']
 # df['expection] = df.expection
-df = st.session_state['df']
+#df = st.session_state['df']
+st.write(df)
+
+if not df.empty:
+    st.subheader('검색결과')
+    st.dataframe(df,
+                 width='stretch',
+                 hide_index=True)
+
+    csv_data = download_to_csv(df)
+    st.download_button(label= 'CSV 결과 다운로드',
+                       data = csv_data,
+                       file_name= f'crawling_results_{site_select}.csv',
+                       mime='text/csv')
+
+# if 'df' not in st.session_state:
+#     st.session_state['df'] = pd.DataFrame()
